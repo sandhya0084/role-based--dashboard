@@ -1,0 +1,115 @@
+{% extends 'base.html' %} {% block page_title %}Dashboard{% endblock %} {% block
+content %}
+<h1 class="text-3xl font-bold mb-4">Welcome, {{ username }}</h1>
+<p class="mb-4">Role: <span class="font-semibold">{{ role }}</span></p>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div class="bg-white p-4 rounded shadow hover:shadow-lg transition">
+    <h3 class="text-xl font-bold mb-2">Tasks per User</h3>
+    <canvas id="tasksChart"></canvas>
+  </div>
+  <div class="bg-white p-4 rounded shadow hover:shadow-lg transition">
+    <h3 class="text-xl font-bold mb-2">Completed Tasks per User</h3>
+    <canvas id="completedChart"></canvas>
+  </div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+  <div class="bg-white rounded shadow p-4">
+    <h3 class="font-bold text-xl">Total Users</h3>
+    <p class="text-2xl">{{ users_count }}</p>
+  </div>
+  <div class="bg-white rounded shadow p-4">
+    <h3 class="font-bold text-xl">Total Tasks</h3>
+    <p class="text-2xl">{{ tasks_count }}</p>
+  </div>
+  <div class="bg-white rounded shadow p-4">
+    <h3 class="font-bold text-xl">Recent Tasks</h3>
+    <ul>
+      {% for task in recent_tasks %}
+      <li>{{ task.title }} - {{ task.assigned_to }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<div class="mt-6 space-x-2">
+  <a
+    href="{{ url_for('add_user') }}"
+    class="bg-green-500 text-white px-4 py-2 rounded"
+    >Add User</a
+  >
+  <a
+    href="{{ url_for('assign_task') }}"
+    class="bg-yellow-500 text-white px-4 py-2 rounded"
+    >Assign Task</a
+  >
+  <a
+    href="{{ url_for('admin_activity_logs') }}"
+    class="bg-purple-500 text-white px-4 py-2 rounded"
+    >Activity Logs</a
+  >
+  <a
+    href="{{ url_for('admin_home') }}"
+    class="bg-blue-500 text-white px-4 py-2 rounded"
+    >Back to Dashboard</a
+  >
+  <a
+    href="{{ url_for('logout') }}"
+    class="bg-red-500 text-white px-4 py-2 rounded"
+    >Logout</a
+  >
+</div>
+
+<div class="mt-6 space-x-2">
+  {% if role=='ADMIN' %}
+  <a
+    href="{{ url_for('users_page') }}"
+    class="bg-green-500 text-white px-4 py-2 rounded"
+    >Manage Users</a
+  >
+
+  <a
+    href="{{ url_for('tasks_page') }}"
+    class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
+    >Manage Tasks</a
+  >
+  <a
+    href="{{ url_for('activity_logs_page') }}"
+    class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600"
+    >Activity Logs</a
+  >
+  {% elif role=='MANAGER' %}
+  <a
+    href="{{ url_for('tasks_page') }}"
+    class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
+    >Manage Tasks</a
+  >
+  {% elif role=='SALES' %}
+  <a
+    href="{{ url_for('tasks_page') }}"
+    class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600"
+    >My Tasks</a
+  >
+  {% endif %}
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+      const usernames = {{ usernames|default([])|tojson|safe }};
+      const tasks_per_user = {{ tasks_per_user|default([])|tojson|safe }};
+      const completed_tasks_per_user = {{ completed_tasks_per_user|default([])|tojson|safe }};
+
+      new Chart(document.getElementById('tasksChart').getContext('2d'), {
+          type: 'bar',
+          data: { labels: usernames, datasets: [{label:'Tasks per User', data:tasks_per_user, backgroundColor:'rgba(54,162,235,0.6)'}] },
+          options: { responsive:true, scales:{y:{beginAtZero:true}} }
+      });
+
+      new Chart(document.getElementById('completedChart').getContext('2d'), {
+          type: 'bar',
+          data: { labels: usernames, datasets: [{label:'Completed Tasks', data:completed_tasks_per_user, backgroundColor:'rgba(75,192,192,0.6)'}] },
+          options: { responsive:true, scales:{y:{beginAtZero:true}} }
+      });
+  });
+</script>
+{% endblock %}

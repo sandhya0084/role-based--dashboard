@@ -1,0 +1,216 @@
+{% extends 'base.html' %} {% block page_title %}Users{% endblock %} {% block
+content %}
+<h1 class="text-3xl font-bold mb-6">Users Management</h1>
+
+<!-- Add User Button -->
+<button
+  onclick="openAddUserModal()"
+  class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 mb-4"
+>
+  + Add User
+</button>
+
+<!-- Users Table -->
+<div class="overflow-x-auto">
+  <table class="min-w-full bg-white rounded shadow">
+    <thead class="bg-blue-500 text-white">
+      <tr>
+        <th class="py-2 px-4 text-left">ID</th>
+        <th class="py-2 px-4 text-left">Username</th>
+        <th class="py-2 px-4 text-left">Email</th>
+        <th class="py-2 px-4 text-left">Role</th>
+        <th class="py-2 px-4 text-left">Manager</th>
+        <th class="py-2 px-4 text-left">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr class="border-b hover:bg-gray-100">
+        <td class="py-2 px-4">{{ u.id }}</td>
+        <td class="py-2 px-4">{{ u.username }}</td>
+        <td class="py-2 px-4">{{ u.email }}</td>
+        <td class="py-2 px-4">{{ u.role }}</td>
+        <td class="py-2 px-4">
+          {% for m in users %} {% if m.id == u.manager_id %}{{ m.username }}{%
+          endif %} {% endfor %}
+        </td>
+        <td class="py-2 px-4 space-x-2">
+          <!-- Edit Button -->
+          <button
+            onclick="openEditUserModal(
+                            '{{ u.id }}',
+                            '{{ u.username | escapejs }}',
+                            '{{ u.email | escapejs }}',
+                            '{{ u.role }}',
+                            '{{ u.manager_id }}'
+                        )"
+            class="bg-yellow-400 text-white px-2 py-1 rounded hover:bg-yellow-500"
+          >
+            Edit
+          </button>
+
+          <!-- Delete Button -->
+          <button
+            onclick="openDeleteUserModal('{{ u.id }}', '{{ u.username | escapejs }}')"
+            class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+          >
+            Delete
+          </button>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="6" class="text-center py-4">No users found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Add User Modal -->
+<div
+  id="addUserModal"
+  class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+>
+  <div class="bg-white rounded p-6 w-96 relative">
+    <h2 class="text-xl font-bold mb-4">Add User</h2>
+    <form method="POST" action="{{ url_for('add_user') }}">
+      <input
+        type="text"
+        name="username"
+        placeholder="Username"
+        class="w-full mb-2 px-2 py-1 border rounded"
+        required
+      />
+      <input
+        type="email"
+        name="email"
+        placeholder="Email"
+        class="w-full mb-2 px-2 py-1 border rounded"
+        required
+      />
+      <input
+        type="password"
+        name="password"
+        placeholder="Password"
+        class="w-full mb-2 px-2 py-1 border rounded"
+        required
+      />
+      <select name="role" class="w-full mb-2 px-2 py-1 border rounded" required>
+        <option value="">Select Role</option>
+        <option value="ADMIN">ADMIN</option>
+        <option value="MANAGER">MANAGER</option>
+        <option value="SALES">SALES</option>
+      </select>
+      <select name="manager_id" class="w-full mb-4 px-2 py-1 border rounded">
+        <option value="">Select Manager</option>
+        {% for m in users if m.role == 'MANAGER' %}
+        <option value="{{ m.id }}">{{ m.username }}</option>
+        {% endfor %}
+      </select>
+      <div class="flex justify-end space-x-2">
+        <button
+          type="button"
+          onclick="closeAddUserModal()"
+          class="px-4 py-2 rounded bg-gray-400 hover:bg-gray-500 text-white"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 rounded bg-green-500 hover:bg-green-600 text-white"
+        >
+          Add
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit User Modal -->
+<!-- Example Edit User Modal -->
+<div id="editUserModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeModal('editUserModal')">&times;</span>
+    <form method="POST" action="{{ url_for('edit_user') }}">
+      <input type="hidden" name="id" id="editUserId" />
+      <label>Username:</label>
+      <input type="text" name="username" id="editUsername" />
+      <label>Email:</label>
+      <input type="email" name="email" id="editEmail" />
+      <label>Role:</label>
+      <select name="role" id="editRole">
+        <option>ADMIN</option>
+        <option>MANAGER</option>
+        <option>SALES</option>
+      </select>
+      <button type="submit">Save Changes</button>
+    </form>
+  </div>
+</div>
+
+<!-- Delete User Modal -->
+<div
+  id="deleteUserModal"
+  class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+>
+  <div class="bg-white rounded p-6 w-80 relative">
+    <h2 class="text-xl font-bold mb-4">Delete User</h2>
+    <p>
+      Are you sure you want to delete
+      <span id="deleteUsername" class="font-semibold"></span>?
+    </p>
+    <form
+      method="POST"
+      id="deleteUserForm"
+      class="mt-4 flex justify-end space-x-2"
+    >
+      <button
+        type="button"
+        onclick="closeDeleteUserModal()"
+        class="px-4 py-2 rounded bg-gray-400 hover:bg-gray-500 text-white"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        class="px-4 py-2 rounded bg-red-500 hover:bg-red-600 text-white"
+      >
+        Delete
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- JS Scripts -->
+<script>
+  function openAddUserModal() {
+    document.getElementById("addUserModal").classList.remove("hidden");
+  }
+  function closeAddUserModal() {
+    document.getElementById("addUserModal").classList.add("hidden");
+  }
+
+  function openEditUserModal(id, username, email, role, manager_id) {
+    document.getElementById("editUserId").value = id;
+    document.getElementById("editUsername").value = username;
+    document.getElementById("editEmail").value = email;
+    document.getElementById("editRole").value = role;
+    document.getElementById("editManagerId").value = manager_id;
+    document.getElementById("editUserForm").action = `/users/edit/${id}`;
+    document.getElementById("editUserModal").classList.remove("hidden");
+  }
+  function closeEditUserModal() {
+    document.getElementById("editUserModal").classList.add("hidden");
+  }
+
+  function openDeleteUserModal(id, username) {
+    document.getElementById("deleteUsername").textContent = username;
+    document.getElementById("deleteUserForm").action = `/users/delete/${id}`;
+    document.getElementById("deleteUserModal").classList.remove("hidden");
+  }
+  function closeDeleteUserModal() {
+    document.getElementById("deleteUserModal").classList.add("hidden");
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'base.html' %} {% block content %}
+<h1 class="text-3xl font-bold mb-4">Welcome, {{ username }}</h1>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+  <div class="bg-white rounded shadow p-4">
+    <h3 class="font-bold text-xl">Total Users</h3>
+    <p class="text-2xl">{{ users_count }}</p>
+  </div>
+  <div class="bg-white rounded shadow p-4">
+    <h3 class="font-bold text-xl">Total Tasks</h3>
+    <p class="text-2xl">{{ tasks_count }}</p>
+  </div>
+  <div class="bg-white rounded shadow p-4">
+    <h3 class="font-bold text-xl">Recent Tasks</h3>
+    <ul>
+      {% for task in recent_tasks %}
+      <li>{{ task.title }} - {{ task.assigned_to }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<div class="mt-6 space-x-2">
+  <a
+    href="{{ url_for('add_user') }}"
+    class="bg-green-500 text-white px-4 py-2 rounded"
+    >Add User</a
+  >
+  <a
+    href="{{ url_for('assign_task') }}"
+    class="bg-yellow-500 text-white px-4 py-2 rounded"
+    >Assign Task</a
+  >
+  <a
+    href="{{ url_for('admin_activity_logs') }}"
+    class="bg-purple-500 text-white px-4 py-2 rounded"
+    >Activity Logs</a
+  >
+  <a
+    href="{{ url_for('admin_home') }}"
+    class="bg-blue-500 text-white px-4 py-2 rounded"
+    >Back to Dashboard</a
+  >
+  <a
+    href="{{ url_for('logout') }}"
+    class="bg-red-500 text-white px-4 py-2 rounded"
+    >Logout</a
+  >
+</div>
+{% endblock %}

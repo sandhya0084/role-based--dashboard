@@ -1,0 +1,24 @@
+{% extends 'base.html' %} {% block content %}
+<h2 class="text-2xl font-bold mb-4">Activity Logs</h2>
+
+<table class="min-w-full bg-white rounded shadow">
+  <thead class="bg-gray-100">
+    <tr>
+      <th class="py-2 px-4">ID</th>
+      <th class="py-2 px-4">Action</th>
+      <th class="py-2 px-4">Timestamp</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for log in logs %}
+    <tr class="border-t">
+      <td class="py-2 px-4">{{ log.id }}</td>
+      <td class="py-2 px-4">{{ log.action }}</td>
+      <td class="py-2 px-4">
+        {{ log.created_at.strftime("%Y-%m-%d %H:%M:%S") }}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,254 @@
+{% extends 'base.html' %} {% block page_title %}Tasks{% endblock %} {% block
+content %}
+<h1 class="text-3xl font-bold mb-6">Tasks Management</h1>
+
+<!-- Add Task Button -->
+<button
+  onclick="openAddTaskModal()"
+  class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 mb-4"
+>
+  + Add Task
+</button>
+
+<!-- Tasks Table -->
+<div class="overflow-x-auto">
+  <table class="min-w-full bg-white rounded shadow">
+    <thead class="bg-blue-500 text-white">
+      <tr>
+        <th class="py-2 px-4 text-left">ID</th>
+        <th class="py-2 px-4 text-left">Title</th>
+        <th class="py-2 px-4 text-left">Description</th>
+        <th class="py-2 px-4 text-left">Assigned To</th>
+        <th class="py-2 px-4 text-left">Status</th>
+        <th class="py-2 px-4 text-left">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in tasks %}
+      <tr class="border-b hover:bg-gray-100">
+        <td class="py-2 px-4">{{ t.id }}</td>
+        <td class="py-2 px-4">{{ t.title }}</td>
+        <td class="py-2 px-4">{{ t.description }}</td>
+        <td class="py-2 px-4">
+          {% for u in users %} {% if u.id == t.assigned_to %}{{ u.username }}{%
+          endif %} {% endfor %}
+        </td>
+        <td class="py-2 px-4">{{ t.status }}</td>
+        <td class="py-2 px-4 space-x-2">
+          <!-- Edit Button -->
+          <button
+            onclick="openEditTaskModal(
+                            '{{ t.id }}',
+                            '{{ t.title | escapejs }}',
+                            '{{ t.description | escapejs }}',
+                            '{{ t.assigned_to }}',
+                            '{{ t.status }}'
+                        )"
+            class="bg-yellow-400 text-white px-2 py-1 rounded hover:bg-yellow-500"
+          >
+            Edit
+          </button>
+
+          <!-- Delete Button -->
+          <button
+            onclick="openDeleteTaskModal('{{ t.id }}', '{{ t.title | escapejs }}')"
+            class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+          >
+            Delete
+          </button>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="6" class="text-center py-4">No tasks available.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Add Task Modal -->
+<div
+  id="addTaskModal"
+  class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+>
+  <div class="bg-white rounded p-6 w-96 relative">
+    <h2 class="text-xl font-bold mb-4">Add Task</h2>
+    <form method="POST" action="{{ url_for('add_task') }}">
+      <input
+        type="text"
+        name="title"
+        placeholder="Title"
+        class="w-full mb-2 px-2 py-1 border rounded"
+        required
+      />
+      <textarea
+        name="description"
+        placeholder="Description"
+        class="w-full mb-2 px-2 py-1 border rounded"
+        required
+      ></textarea>
+      <select
+        name="assigned_to"
+        class="w-full mb-2 px-2 py-1 border rounded"
+        required
+      >
+        <option value="">Assign to</option>
+        {% for u in users %}
+        <option value="{{ u.id }}">{{ u.username }}</option>
+        {% endfor %}
+      </select>
+      <select
+        name="status"
+        class="w-full mb-4 px-2 py-1 border rounded"
+        required
+      >
+        <option value="PENDING">PENDING</option>
+        <option value="COMPLETED">COMPLETED</option>
+      </select>
+      <div class="flex justify-end space-x-2">
+        <button
+          type="button"
+          onclick="closeAddTaskModal()"
+          class="px-4 py-2 rounded bg-gray-400 hover:bg-gray-500 text-white"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 rounded bg-green-500 hover:bg-green-600 text-white"
+        >
+          Add
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Task Modal -->
+<div
+  id="editTaskModal"
+  class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+>
+  <div class="bg-white rounded p-6 w-96 relative">
+    <h2 class="text-xl font-bold mb-4">Edit Task</h2>
+    <form method="POST" id="editTaskForm">
+      <input type="hidden" name="task_id" id="editTaskId" />
+      <input
+        type="text"
+        name="title"
+        id="editTaskTitle"
+        placeholder="Title"
+        class="w-full mb-2 px-2 py-1 border rounded"
+        required
+      />
+      <textarea
+        name="description"
+        id="editTaskDescription"
+        placeholder="Description"
+        class="w-full mb-2 px-2 py-1 border rounded"
+        required
+      ></textarea>
+      <select
+        name="assigned_to"
+        id="editTaskAssignedTo"
+        class="w-full mb-2 px-2 py-1 border rounded"
+        required
+      >
+        {% for u in users %}
+        <option value="{{ u.id }}">{{ u.username }}</option>
+        {% endfor %}
+      </select>
+      <select
+        name="status"
+        id="editTaskStatus"
+        class="w-full mb-4 px-2 py-1 border rounded"
+        required
+      >
+        <option value="PENDING">PENDING</option>
+        <option value="COMPLETED">COMPLETED</option>
+      </select>
+      <div class="flex justify-end space-x-2">
+        <button
+          type="button"
+          onclick="closeEditTaskModal()"
+          class="px-4 py-2 rounded bg-gray-400 hover:bg-gray-500 text-white"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 rounded bg-yellow-400 hover:bg-yellow-500 text-white"
+        >
+          Update
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Delete Task Modal -->
+<div
+  id="deleteTaskModal"
+  class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+>
+  <div class="bg-white rounded p-6 w-80 relative">
+    <h2 class="text-xl font-bold mb-4">Delete Task</h2>
+    <p>
+      Are you sure you want to delete
+      <span id="deleteTaskTitle" class="font-semibold"></span>?
+    </p>
+    <form
+      method="POST"
+      id="deleteTaskForm"
+      class="mt-4 flex justify-end space-x-2"
+    >
+      <button
+        type="button"
+        onclick="closeDeleteTaskModal()"
+        class="px-4 py-2 rounded bg-gray-400 hover:bg-gray-500 text-white"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        class="px-4 py-2 rounded bg-red-500 hover:bg-red-600 text-white"
+      >
+        Delete
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- JS Scripts -->
+<script>
+  function openAddTaskModal() {
+    document.getElementById("addTaskModal").classList.remove("hidden");
+  }
+  function closeAddTaskModal() {
+    document.getElementById("addTaskModal").classList.add("hidden");
+  }
+
+  function openEditTaskModal(id, title, description, assigned_to, status) {
+    document.getElementById("editTaskId").value = id;
+    document.getElementById("editTaskTitle").value = title;
+    document.getElementById("editTaskDescription").value = description;
+    document.getElementById("editTaskAssignedTo").value = assigned_to;
+    document.getElementById("editTaskStatus").value = status;
+    document.getElementById("editTaskForm").action = `/tasks/edit/${id}`;
+    document.getElementById("editTaskModal").classList.remove("hidden");
+  }
+  function closeEditTaskModal() {
+    document.getElementById("editTaskModal").classList.add("hidden");
+  }
+
+  function openDeleteTaskModal(id, title) {
+    document.getElementById("deleteTaskTitle").textContent = title;
+    document.getElementById("deleteTaskForm").action = `/tasks/delete/${id}`;
+    document.getElementById("deleteTaskModal").classList.remove("hidden");
+  }
+  function closeDeleteTaskModal() {
+    document.getElementById("deleteTaskModal").classList.add("hidden");
+  }
+</script>
+{% endblock %}
